@@ -1,4 +1,4 @@
-package com.zunisoft.critters.web;
+package com.zunisoft.critters.wrapper;
 
 import android.app.Activity;
 import android.os.Bundle;
