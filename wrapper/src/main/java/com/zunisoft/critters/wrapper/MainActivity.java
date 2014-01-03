@@ -1,9 +1,12 @@
 package com.zunisoft.critters.wrapper;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -12,6 +15,8 @@ import android.widget.Button;
 public class MainActivity extends Activity {
     private WebView mWebView;
     private Button button;
+    private ValueCallback<Uri> mUploadMessage;
+    private final static int FILECHOOSER_RESULTCODE = 1;
 
     /**
      * WebViewClient subclass loads all hyperlinks in the existing WebView
@@ -36,6 +41,23 @@ public class MainActivity extends Activity {
             // Always grant permission since the app itself requires location
             // permission and the user has therefore already granted it
             callback.invoke(origin, true, false);
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+
+            mUploadMessage = uploadMsg;
+            Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("*/*");
+            MainActivity.this.startActivityForResult(Intent.createChooser(i,"Image Chooser"), FILECHOOSER_RESULTCODE);
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType) {
+            openFileChooser(uploadMsg);
+        }
+
+        public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+            openFileChooser(uploadMsg);
         }
     }
 
@@ -85,4 +107,18 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Activity result event */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,
+                                    Intent intent) {
+        if (requestCode == FILECHOOSER_RESULTCODE) {
+            if (null == mUploadMessage)
+                return;
+            Uri result = intent == null || resultCode != RESULT_OK ? null
+                    : intent.getData();
+            mUploadMessage.onReceiveValue(result);
+            mUploadMessage = null;
+
+        }
+    }
 }
